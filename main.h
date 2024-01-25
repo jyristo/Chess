@@ -11,6 +11,7 @@ int check_move_legality(char **board,char start[],char end[],int turn);
 void ask_move(char **board,int turn);
 
 int test_pawn_move(int start_row,int start_col,int end_row,int end_pos,int turn,char **board);
+int test_rook_move(int start_row,int start_col,int end_row,int end_col,int turn);
 
 enum pieces{
     PAWN = 112,

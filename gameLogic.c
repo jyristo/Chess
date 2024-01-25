@@ -67,15 +67,13 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
         switch (piece){
             case PAWN:
                 //Check the square to move is free since pawns can't take moving forward
-                if(board[end_row][end_col] == ' '){
-                        is_legal = test_pawn_move(start_row,start_col,end_row,end_col,turn,board);
-                    //Check for pawn promotion;
-                   if((is_legal == 0 && end_row == 7) || (is_legal == 0 && end_row == 0)){
-                       char queen_promotion = (turn == 0) ? 'Q': 'q';
-                       board[start_row][start_col] = queen_promotion;
-                   }
-                }else{
-                    printf("\nNot empty");}
+                is_legal = test_pawn_move(start_row,start_col,end_row,end_col,turn,board);
+
+                //Check for pawn promotion;
+                if((is_legal == 0 && end_row == 7) || (is_legal == 0 && end_row == 0)){
+                    char queen_promotion = (turn == 0) ? 'Q': 'q';
+                    board[start_row][start_col] = queen_promotion;
+                }
                 break;
             case ROOK:
                 printf("\nROOK\n\n");
@@ -97,7 +95,7 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
 
         if(is_legal ==0){
             board[end_row][end_col] = board[start_row][start_col];
-            board[start_row][start_col]= ' ';
+            board[start_row][start_col]= EMPTY_SQUARE;
         }
         return is_legal;
     } 
@@ -105,32 +103,51 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
 }
 int test_pawn_move(int start_row,int start_col,int end_row,int end_col,int turn,char **board){
 int is_legal=1;
-    //If the move isn't in the same column its not possible
-    if(end_col != start_col){
-        return is_legal;
-    }
-    //Check move cases for white(0) and black(1)
+int is_empty=0;
+
+int move_dir = (turn == 0) ? 1 : -1;
+
+//is_empty = (board[end_row][end_col] == EMPTY_SQUARE) ? 1 : 0;
+
     switch (turn){
             case 0:
-                if(start_row == 1 && (end_row<=(start_row+2))){
-                    is_legal=0;
-                }else if(end_row == start_row +1){
-                    is_legal=0;
-                }else{}
-                
-                break;
+                if(is_empty){    
+                    if(end_col == start_col){
+                        if(start_row == 1 && (end_row<=(start_row+2))){
+                            is_legal = 0;
+                        }else if(end_row == start_row +1){
+                            is_legal = 0;
+                        }else{
+                            break;
+                        }
+                    }
+                    break;
+                }else{
+                    if((end_row == (start_row+1)) && ((end_col == (start_col +1)) || (end_col == (start_col -1)))){
+                        is_legal = 0;
+                    }
+                }   
+                    break;
             case 1:
-                 if(start_row == 6 && (end_row>=(start_row-2))){
-                    is_legal=0;
-                }else if(end_row ==start_row -1){
-                    is_legal=0; 
-                }else{}
-                break;
+                if(is_empty){
+                    if(end_col == start_col){           
+                        if(start_row == 6 && (end_row>=(start_row-2))){
+                            is_legal = 0;
+                        }else if(end_row ==start_row -1){
+                            is_legal = 0; 
+                        }else{
+                             break;
+                        }
+                    }
+                    break;
+                }else{
+                    if((end_row == (start_row-1)) && ((end_col == (start_col +1)) || (end_col == (start_col -1)))){
+                        is_legal = 0;
+                    }
+                }
     }
     return is_legal;
 }
 int test_rook_move(int start_row,int start_col,int end_row,int end_col,int turn){
-
-
 return 0;
 }

@@ -76,10 +76,10 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
                 }
                 break;
             case ROOK:
-                printf("\nROOK\n\n");
+                is_legal = test_rook_move(start_row,start_col,end_row,end_col,board);
                 break;
             case KNIGHT:
-                printf("\nHORSE\n\n");
+                is_legal = test_knight_move(start_row,start_col,end_row,end_col);
                 break;
             case BISHOP:
                 printf("\nBISHOP");
@@ -93,7 +93,7 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
 
         }
 
-        if(is_legal ==0){
+        if(is_legal == 0){
             board[end_row][end_col] = board[start_row][start_col];
             board[start_row][start_col]= EMPTY_SQUARE;
         }
@@ -102,16 +102,18 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
     
 }
 int test_pawn_move(int start_row,int start_col,int end_row,int end_col,int turn,char **board){
-int is_legal=1;
-int is_empty=0;
+int is_legal = 1;
+int is_empty = 0;
 int first_move;
 int move_dir = (turn == 0) ? 1 : -1;
 int col_change = abs(end_col - start_col);
 
 is_empty = (board[end_row][end_col] == EMPTY_SQUARE) ? 1 : 0;
 
+    //If the landing square is empty, check if pawn is in starting square, also check that there isn't a piece blocking the 
     if(is_empty){
-        if((((start_row == (first_move = (turn == 0) ? 1 : 6)) && (end_row == (start_row + move_dir * 2))) || (end_row == start_row + (1 * move_dir))) && col_change == 0){
+        if(((((start_row == (first_move = (turn == 0) ? 1 : 6)) && (end_row == (start_row + move_dir * 2))) && board[end_row - (1*move_dir)][end_col] == EMPTY_SQUARE) ||
+        (end_row == start_row + (1 * move_dir))) && col_change == 0){
             is_legal = 0;
         }
     }else{
@@ -122,6 +124,49 @@ is_empty = (board[end_row][end_col] == EMPTY_SQUARE) ? 1 : 0;
 
     return is_legal;
 }
-int test_rook_move(int start_row,int start_col,int end_row,int end_col,int turn){
-return 0;
+
+int test_rook_move(int start_row,int start_col,int end_row,int end_col,char **board){
+int is_legal = 1;
+int dir = 0;
+int col_change = abs(end_col - start_col);
+int row_change = abs(end_row - start_row);
+    //Check that we move only horizontally or vertically
+    if(((col_change  != 0) && (row_change == 0)) || ((col_change == 0) && (row_change != 0))){
+        is_legal = 0;
+        if(col_change == 0){
+            //Check which direction we are moving vertically
+            dir = (end_row > start_row) ? 1 : -1;
+            //Ensure we don't jump over pieces
+            for(int i=1;i<row_change;i++){
+                if(board[start_row + (i*dir)][start_col] != EMPTY_SQUARE){
+                    is_legal = 1;
+                    break;
+                }
+            }
+        }else{
+            //Check which direction we are moving horizontally
+            dir = (end_col > start_col) ? 1 : -1;
+            //Ensure we don't jump over a piece
+            for(int i=1;i<col_change;i++){
+                if(board[start_row][start_col + (i*dir)] != EMPTY_SQUARE){
+                    is_legal = 1;
+                    break;
+                }
+            }
+
+        }
+    }
+    return is_legal;
+}
+
+int test_knight_move(int start_row,int start_col,int end_row,int end_col){
+int is_legal = 1;
+int col_change = abs(end_col - start_col);
+int row_change = abs(end_row - start_row);
+
+    if((col_change == 1 && row_change == 2) || (col_change == 2 && row_change == 1)){
+        is_legal = 0;
+    }
+
+    return is_legal;
 }

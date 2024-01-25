@@ -104,48 +104,22 @@ printf(" %d %d %d %d - %c-",start_row,start_col,end_row,end_col,board[end_row][e
 int test_pawn_move(int start_row,int start_col,int end_row,int end_col,int turn,char **board){
 int is_legal=1;
 int is_empty=0;
-
+int first_move;
 int move_dir = (turn == 0) ? 1 : -1;
+int col_change = abs(end_col - start_col);
 
-//is_empty = (board[end_row][end_col] == EMPTY_SQUARE) ? 1 : 0;
+is_empty = (board[end_row][end_col] == EMPTY_SQUARE) ? 1 : 0;
 
-    switch (turn){
-            case 0:
-                if(is_empty){    
-                    if(end_col == start_col){
-                        if(start_row == 1 && (end_row<=(start_row+2))){
-                            is_legal = 0;
-                        }else if(end_row == start_row +1){
-                            is_legal = 0;
-                        }else{
-                            break;
-                        }
-                    }
-                    break;
-                }else{
-                    if((end_row == (start_row+1)) && ((end_col == (start_col +1)) || (end_col == (start_col -1)))){
-                        is_legal = 0;
-                    }
-                }   
-                    break;
-            case 1:
-                if(is_empty){
-                    if(end_col == start_col){           
-                        if(start_row == 6 && (end_row>=(start_row-2))){
-                            is_legal = 0;
-                        }else if(end_row ==start_row -1){
-                            is_legal = 0; 
-                        }else{
-                             break;
-                        }
-                    }
-                    break;
-                }else{
-                    if((end_row == (start_row-1)) && ((end_col == (start_col +1)) || (end_col == (start_col -1)))){
-                        is_legal = 0;
-                    }
-                }
+    if(is_empty){
+        if((((start_row == (first_move = (turn == 0) ? 1 : 6)) && (end_row == (start_row + move_dir * 2))) || (end_row == start_row + (1 * move_dir))) && col_change == 0){
+            is_legal = 0;
+        }
+    }else{
+        if(col_change == 1 && (end_row == (start_row + (move_dir*1)))){
+            is_legal = 0;
+        }
     }
+
     return is_legal;
 }
 int test_rook_move(int start_row,int start_col,int end_row,int end_col,int turn){

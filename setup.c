@@ -13,17 +13,22 @@ void display(char **board){
 }
 
 void init_board(char** board){
+    //Reinitialize game variables 
     gameover =0;
-    turn = 1;
+    turn = 0;
+    king_moves = 0;
+    move_count = 0;
+    rook_moves = 0;
+    
     char init_vals[8][8] = {  
-        {'R','N','B','K','Q','B','N','R'},
+        {'R','n',' ',' ','K',' ',' ','R'},
         {'P','P','P','P','P','P','P','P'},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {'p','p','p','p','p','p','p','p'},
-        {'r','n','b','k','q','b','n','r'}
+        {'r',' ',' ',' ','k',' ',' ','r'}
     };
     for(int i=0;i<8;i++){
         for(int j=0;j<8;j++){

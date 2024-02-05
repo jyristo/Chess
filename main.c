@@ -2,19 +2,23 @@
 #include <stdlib.h>
 #include "main.h"
 
-int main(void){
+int gameover = 0;
+int turn = 1;
+int king_moves = 0;
+int move_count = 0;
+int rook_moves = 0;
 
+int main(void){
+    printf("Moikka");
+    //Allocate memory for the gameboard
     char **board = NULL;
     board = (char**)malloc(8 * sizeof(char*));
-
     if(board == NULL){
         printf("Memory allocating failed, exitting...");
         return 1;
-    }else{
-        printf("Memory allocated succesfully\n");
     }
-    
-    for(int i=0;i<8;i++){
+
+        for(int i=0;i<8;i++){
             board[i] = (char*) malloc(8*sizeof(char));
             if(board[i] == NULL){
                 printf("Memory allocating failed\n");
@@ -22,11 +26,10 @@ int main(void){
                     free(board[j]);
                 }
             }
-    }
+        }
+    
     init_board(board);
     display(board);
-    printf("\n\nWelcome to chess\nEnter piece start and end position ex. a2 a3\n");
-    turn = 0;
 
     while(!gameover){
         ask_move(board,turn);

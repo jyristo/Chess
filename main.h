@@ -5,6 +5,12 @@
 #define WHITE_PIECES 96
 #define EMPTY_SQUARE ' '
 
+extern int gameover;
+extern int king_moves;
+extern int turn;
+extern int move_count;
+extern int rook_moves;
+
 void init_board(char** board);
 void display(char **board);
 
@@ -16,10 +22,10 @@ int test_rook_move(int start_row,int start_col,int end_row,int end_col,char **bo
 int test_knight_move(int start_row,int start_col,int end_row,int end_col);
 int test_bishop_move(int start_row,int start_col,int end_row,int end_col,char **board);
 int test_queen_move(int start_row,int start_col,int end_row,int end_col,char **board);
+int test_king_move(int start_row,int start_col,int end_row,int end_col,char **board);
+int test_castling(int start_row,int start_col,int end_row,int end_col,char **board);
 
-int gameover;
-int turn;
-char move[5];
+
 
 enum pieces{
     PAWN = 112,

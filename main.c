@@ -7,6 +7,7 @@ int turn = 1;
 int king_moves = 0;
 int move_count = 0;
 int rook_moves = 0;
+Move last_move = {0,0,0,0, ' '};
 
 int main(void){
     printf("Moikka");

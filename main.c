@@ -11,7 +11,7 @@ int rook_moves = 0;
 int white_king_pos = 4;
 int black_king_pos = 60;
 Move last_move = {0,0,0,0, ' '};
-
+Pieces black_pieces = {}
 int main(void){
     // Create the board
     char **board = NULL;

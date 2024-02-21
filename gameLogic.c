@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "main.h"
 
 void ask_move(char **board,int turn){
@@ -7,6 +8,9 @@ void ask_move(char **board,int turn){
     char end_pos[3];
     int correct_symbols=0;
     int is_legal = 1;
+
+    printf("\nWhite k row: %d\n",white_king_pos);
+    printf("\nBlack k row: %d\n",black_king_pos);
 
     if(turn==0){
         printf("\nWhite's turn\n");
@@ -66,56 +70,104 @@ int check_move_legality(char **board,char start[],char end[],int turn){
     // Same For black
     }else if(turn == 1 && ((board[end_row][end_col] > WHITE_PIECES) || (board[start_row][start_col] < WHITE_PIECES ))){
        return 1;
-    }else{
-        // Convert the piece we are moving to lowercase for the enum variable used in switch
-        char char_piece = board[start_row][start_col];
-        char_piece = (char_piece >= 'A' && char_piece <= 'Z') ? char_piece + ('a'-'A'):char_piece;
-        enum pieces piece = char_piece;
+    }
+    // Convert the piece we are moving to lowercase for the enum variable used in switch
+    char char_piece = board[start_row][start_col];
+    char_piece = (char_piece >= 'A' && char_piece <= 'Z') ? char_piece + ('a'-'A'):char_piece;
+    enum pieces piece = char_piece;
 
-        // Based on what piece we are moving check if the move is legal
-        switch (piece){
-            case PAWN:
-                is_legal = test_pawn_move(start_row,start_col,end_row,end_col,turn,board);
+    // Based on what piece we are moving check if the move is legal
+    switch (piece){
+        case PAWN:
+            is_legal = test_pawn_move(start_row,start_col,end_row,end_col,turn,board);
+            // Check for pawn promotion;
+            if(is_legal == 0 && (end_row == 7 || end_row == 0)){
+                char queen_promotion = (turn == 0) ? 'Q': 'q';
 
-                // Check for pawn promotion;
-                if((is_legal == 0 && end_row == 7) || (is_legal == 0 && end_row == 0)){
-                    char queen_promotion = (turn == 0) ? 'Q': 'q';
-                    board[start_row][start_col] = queen_promotion;
-                }
-                break;
-            case ROOK:
-                is_legal = test_rook_move(start_row,start_col,end_row,end_col,board);
-                break;
-            case KNIGHT:
-                is_legal = test_knight_move(start_row,start_col,end_row,end_col);
-                break;
-            case BISHOP:
-                is_legal = test_bishop_move(start_row,start_col,end_row,end_col,board);
-                break;
-            case QUEEN:
-                is_legal = test_queen_move(start_row,start_col,end_row,end_col,board);
-                break;
-            case KING:
-                is_legal = test_king_move(start_row,start_col,end_row,end_col,board);
-                break;
+                // The pawn is first turned in to a queen since the actual gameboard updating happens in finalize_move()
+                board[start_row][start_col] = queen_promotion;
+            }
+            break;
+        case ROOK:
+            is_legal = test_rook_move(start_row,start_col,end_row,end_col,board);
+            break;
+        case KNIGHT:
+            is_legal = test_knight_move(start_row,start_col,end_row,end_col);
+            break;
+        case BISHOP:
+            is_legal = test_bishop_move(start_row,start_col,end_row,end_col,board);
+            break;
+        case QUEEN:
+            is_legal = test_queen_move(start_row,start_col,end_row,end_col,board);
+            break;
+        case KING:
+            is_legal = test_king_move(start_row,start_col,end_row,end_col,board);
+            break;
+    }
+    // TO DO Check that the king isn't threatend resulting in the move
+    is_legal = test_for_checks(start_row, start_col, end_row, end_col,board);
+
+    // Update the board, last move variable and king position
+    if(is_legal == 0){
+        finalize_move(start_row, start_col, end_row, end_col,board);
+    }
+    // Finally return if the move is legal 0 = legal, 1 = illegal
+    return is_legal;
+} 
+int test_for_checks(int start_row,int start_col,int end_row,int end_col,char **board){
+    int *king_ptr = (turn == 0) ? &black_king_pos : &white_king_pos;
+    char temp_board[8][8];
+
+    for(int i = 0;i<8;i++){
+        for(int j = 0;j<8; j++){
+            temp_board[i][j] = board[i][j];
         }
-        // TO DO Check that the king isn't threatend resulting in the move
+    }
+    // Create a temporary gameboard and pretend we make the move
+    temp_board[end_row][end_col] = temp_board[start_row][start_col];
+    temp_board[start_row][start_col] = EMPTY_SQUARE;
 
 
-        // Update the board and last move variable
-        if(is_legal == 0){
-            board[end_row][end_col] = board[start_row][start_col];
-            board[start_row][start_col ]= EMPTY_SQUARE;
-            
-            last_move.start_col = start_col;
-            last_move.start_row = start_row;
-            last_move.end_col = end_col;
-            last_move.end_row = end_row;
-            last_move.piece = board[end_row][end_col];
-        }
-        // Finally return if the move is legal 0 = legal, i = illegal
-        return is_legal;
-    } 
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return 0;
+}
+void finalize_move(int start_row,int start_col,int end_row,int end_col,char **board){
+    // Update the game board
+    board[end_row][end_col] = board[start_row][start_col];
+    board[start_row][start_col ]= EMPTY_SQUARE;
+    // Update last move variable
+    last_move.start_col = start_col;
+    last_move.start_row = start_row;
+    last_move.end_col = end_col;
+    last_move.end_row = end_row;
+    last_move.piece = board[end_row][end_col];
+
+    // Update king position
+    if(board[end_row][end_col] == 'k'){
+        black_king_pos = end_row * 8 + end_col;
+    }else if(board[end_row][end_col] == 'K'){
+        white_king_pos = end_row * 8 + end_col;
+
+    }
+
 }
 int test_pawn_move(int start_row,int start_col,int end_row,int end_col,int turn,char **board){
     int first_move = (turn == 0) ? 1 : 6;

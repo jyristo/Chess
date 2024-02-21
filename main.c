@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "main.h"
 
 int gameover = 0;
@@ -7,6 +8,8 @@ int turn = 1;
 int king_moves = 0;
 int move_count = 0;
 int rook_moves = 0;
+int white_king_pos = 4;
+int black_king_pos = 60;
 Move last_move = {0,0,0,0, ' '};
 
 int main(void){
@@ -37,7 +40,7 @@ int main(void){
         turn ^= 1;
     }
 
-    // Dstroy the board
+    // Destroy the board
     for(int i=0;i<8;i++){
         free(board[i]);
     }

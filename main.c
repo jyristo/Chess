@@ -10,8 +10,7 @@ int rook_moves = 0;
 Move last_move = {0,0,0,0, ' '};
 
 int main(void){
-    printf("Moikka");
-    //Allocate memory for the gameboard
+    // Create the board
     char **board = NULL;
     board = (char**)malloc(8 * sizeof(char*));
     if(board == NULL){
@@ -28,16 +27,17 @@ int main(void){
                 }
             }
         }
-    
     init_board(board);
     display(board);
 
+    // Superloop: Ask moves and display the board until game over
     while(!gameover){
         ask_move(board,turn);
         display(board);
         turn ^= 1;
     }
 
+    // Dstroy the board
     for(int i=0;i<8;i++){
         free(board[i]);
     }

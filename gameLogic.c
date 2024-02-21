@@ -72,7 +72,7 @@ int check_move_legality(char **board,char start[],char end[],int turn){
         char_piece = (char_piece >= 'A' && char_piece <= 'Z') ? char_piece + ('a'-'A'):char_piece;
         enum pieces piece = char_piece;
 
-        // Based on what piece we are moving we check if the move is legal
+        // Based on what piece we are moving check if the move is legal
         switch (piece){
             case PAWN:
                 is_legal = test_pawn_move(start_row,start_col,end_row,end_col,turn,board);
@@ -99,21 +99,23 @@ int check_move_legality(char **board,char start[],char end[],int turn){
                 is_legal = test_king_move(start_row,start_col,end_row,end_col,board);
                 break;
         }
-        // Check that the king isn't threatend resulting in the move
+        // TO DO Check that the king isn't threatend resulting in the move
 
+
+        // Update the board and last move variable
         if(is_legal == 0){
             board[end_row][end_col] = board[start_row][start_col];
             board[start_row][start_col ]= EMPTY_SQUARE;
+            
             last_move.start_col = start_col;
             last_move.start_row = start_row;
             last_move.end_col = end_col;
             last_move.end_row = end_row;
             last_move.piece = board[end_row][end_col];
         }
-        // Finally return if the move is legal (0 legal, 1 illegal)
+        // Finally return if the move is legal 0 = legal, i = illegal
         return is_legal;
     } 
-    
 }
 int test_pawn_move(int start_row,int start_col,int end_row,int end_col,int turn,char **board){
     int first_move = (turn == 0) ? 1 : 6;
@@ -150,7 +152,6 @@ int test_pawn_move(int start_row,int start_col,int end_row,int end_col,int turn,
     }
     return 1;
 }
-
 int test_rook_move(int start_row,int start_col,int end_row,int end_col,char **board){
     int col_change = abs(end_col - start_col);
     int row_change = abs(end_row - start_row);
@@ -167,19 +168,18 @@ int test_rook_move(int start_row,int start_col,int end_row,int end_col,char **bo
                 return 1;
             }
         }
-        //Update the rook_moves variable that is used to check for castling rights
+        // Update the rook_moves variable that is used to check for castling rights
+        // 0001 white a-rook, 0010 white h-rook, 0100 black a-rook,1000 = black h-rook 
         if((start_col == 0 || start_col == 7) && (start_row == 0 || start_row == 7)){
             int rook_column = (start_col == 0) ? 0 : 1;
             int rook_color = (start_row == 0) ? 0 : 2;
 
-            // rook_moves stores if the rooks have moved. 0001 white a-rook, 0010 white h-rook, 0100 black a-rook,1000 = black h-rook
             rook_moves |= (1U<<(rook_column + rook_color));
         }
         return 0;
    }
    return 1; 
 }
-
 int test_knight_move(int start_row,int start_col,int end_row,int end_col){
     int col_change = abs(end_col - start_col);
     int row_change = abs(end_row - start_row);
@@ -190,7 +190,6 @@ int test_knight_move(int start_row,int start_col,int end_row,int end_col){
     }
     return 1;
 }
-
 int test_bishop_move(int start_row,int start_col,int end_row,int end_col,char **board){
     int col_change = abs(end_col - start_col);
     int row_change = abs(end_row - start_row);
@@ -234,7 +233,7 @@ int test_queen_move(int start_row,int start_col,int end_row,int end_col,char **b
             if(board[start_row + (row_delta * row_dir * i) ][start_col + (col_delta * col_dir * i)] !=  EMPTY_SQUARE){
                 return 1;
             }
-        }
+        } 
         return 0;
     }
     return 1;
@@ -296,7 +295,7 @@ int test_castling(int start_row,int start_col,int end_row,int end_col,char **boa
     }
     // Get the rooks actual position from the earlier used rook_col variable
     rook_col = (rook_col == 0) ? 0 : 7;
-    
+
     // Update the rooks position and the king_moves variable
     board[end_row][rook_col] = EMPTY_SQUARE;
     board[end_row][end_col - col_dir] = (turn == 0) ? 'R' : 'r';

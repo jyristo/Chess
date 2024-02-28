@@ -3,15 +3,16 @@
 #include <stdint.h>
 #include "main.h"
 
-int gameover = 0;
-int turn = 1;
+int game_over = 0;
+int turn = 0;
 int king_moves = 0;
-int move_count = 0;
+int move_count = 1;
 int rook_moves = 0;
-int white_king_pos = 4;
-int black_king_pos = 60;
 Move last_move = {0,0,0,0, ' '};
-Pieces black_pieces = {}
+Piece white_king = {.row = 0,.col = 4};
+Piece black_king = {.row = 7,.col = 4};
+int check_mate = 0;
+
 int main(void){
     // Create the board
     char **board = NULL;
@@ -34,11 +35,12 @@ int main(void){
     display(board);
 
     // Superloop: Ask moves and display the board until game over
-    while(!gameover){
-        ask_move(board,turn);
+    while(!game_over){
+        ask_move(board);
         display(board);
         turn ^= 1;
     }
+    display_winner();
 
     // Destroy the board
     for(int i=0;i<8;i++){

@@ -15,15 +15,15 @@ void display(char **board){
 
 void init_board(char** board){
     //Reinitialize game variables 
-    gameover =0;
+    game_over = 0;
     turn = 0;
     king_moves = 0;
-    move_count = 0;
+    move_count = 1;
     rook_moves = 0;
     
     char init_vals[8][8] = {  
         {'R',' ',' ',' ','K',' ',' ','R'},
-        {'P','P','P',' ','p','P','P','P'},
+        {'P','P','P',' ','P','P','P','P'},
         {' ',' ',' ',' ','n',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
@@ -35,5 +35,12 @@ void init_board(char** board){
         for(int j=0;j<8;j++){
            board[i][j]=init_vals[i][j];
         }
+    }
+}
+void display_winner(){
+    if(turn == 0){
+        printf("\nCHECKMATE---WHITE WINS\n");
+    }else{
+        printf("\nCHECKMATE---BLACK WINS\n");
     }
 }

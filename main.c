@@ -4,18 +4,20 @@
 #include "main.h"
 
 int game_over = 0;
-int turn = 0;
+int turn = 1;
 int king_moves = 3;
-int move_count = 1;
+int move_number = 1;
 int rook_moves = 15;
 Move last_move = {0,0,0,0, 'X'};
-Piece white_king = {.row = 0,.col = 4,'k'};
-Piece black_king = {.row = 7,.col = 4,'k'};
+
 Piece checking_piece = {.row = 0,.col = 0,' '};
 int check_mate = 0;
 
 
 int main(void){
+    int move_history[100];
+    int previous_move = 0;
+    int move_number = 0;
     // Create the board and move variables
     char **board = NULL;
     board = (char**)malloc(8 * sizeof(char*));
@@ -46,22 +48,11 @@ int main(void){
 */
     // Superloop: Ask moves and display the board until game over
     while(!game_over){
-    int* move_count = (int*)malloc(sizeof(int));
-    *move_count = 0;
-    int white_moves[100];
-    
-    printf("\n\nMove count : %d\n",*move_count);
-    compute_moves(board,white_moves,move_count);
-
-    printf("Move count : %d\n",*move_count);
-    for(int i=0;i < *move_count;i++){
-        printf("[%d %d]",(white_moves[i] & 63), (white_moves[i]>>6));
-    }
-        ask_move(board);
-        display(board);
         turn ^= 1;
+        ask_move(board,move_history,&previous_move,&move_number);
+        display(board);
     }
-    display_winner();
+    display_winner(board);
     // Destroy the board
     for(int i=0;i<8;i++){
         free(board[i]);

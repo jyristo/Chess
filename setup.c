@@ -71,6 +71,6 @@ void display_winner(char** board,Gamestate* gamestate){
         else
             printf("\n!!!!!!!!!!!WHITE WINS!!!!!!!!!!\n");
     }else{
-        printf("\nITS A STALEMATE YOU ALL SUCK, FUCK YOU EAT SHIT\n");
+        printf("\nITS A STALEMATE\n");
     }
 }

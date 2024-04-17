@@ -1,3 +1,19 @@
+/*
+    CORE MOVE GENERATION AND VALIDATION LOGIC
+    1. Generate all legal moves and store them in a move list.
+        1.1 Based on a pieces ruleset compute all of its moves
+        1.2 If a move is within bounds we call the is_king_threatened function
+        1.3 In is_king_threatened we make the move and loop all enemy pieces and see if they can attack the square the king is located
+        1.4 If king is safe we add the move and continue looping
+    2. Move information is stored into a 32bit integer as follows:
+    - bits 0-5 starting square
+    - bits 6-11 landing square
+    - bits 12- store specific information of the move such as rookmoves,castling,capturing pieces etc..
+    3. Ask user for input, hash it and see if it matches a move on the move list
+        3.1 If we get a match check for bits 12- to see if the move contains special manouvers and handle them separately
+        3.2 Make the move on the gameboard and update piece position
+    4. repeat until move_count is 0 and then handle game ending
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -26,10 +42,6 @@ void ask_move(char **board,Gamestate* gamestate){
         return;
     }
     #ifdef DEBUG
-        /*printf("\nOUR PIECE POSITIONS: ");
-        for(int i = 0;i < gamestate->piece_count[gamestate->turn];i++){
-            printf("[%d %d],",decode(gamestate->pieces[gamestate->turn][i],ROW),decode(gamestate->pieces[gamestate->turn][i],COL));
-        }*/
          printf("ALL MOVES: ");
          for(int i=0;i < move_count;i++){
             printf("[%c%d %c%d]",(move_list[i] & 63) % 8 + 'A',((move_list[i] & 63)/ 8)+1,((move_list[i]>>6) & 63) % 8 + 'A',(( move_list[i]>>6) & 63) / 8 +1);

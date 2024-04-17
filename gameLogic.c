@@ -49,16 +49,6 @@ void ask_move(char **board,Gamestate* gamestate){
             if(move_list[i] & CAPTURE_MOVE)
                 printf("[%c%d %c%d]",(move_list[i] & 63) % 8 + 'A',((move_list[i] & 63)/ 8)+1,((move_list[i]>>6) & 63) % 8 + 'A',(( move_list[i]>>6) & 63) / 8 +1);
         }
-        /*printf("\nROOK MOVES: ");
-        for(int i=0;i < move_count;i++){
-            if(move_list[i] & ROOK_MOVE)
-                printf("[%c%d %c%d]",(move_list[i] & 63) % 8 + 'A',((move_list[i] & 63)/ 8)+1,((move_list[i]>>6) & 63) % 8 + 'A',(( move_list[i]>>6) & 63) / 8 +1);
-        }
-        printf("\nKNIGHT MOVES ");
-        for(int i=0;i < move_count;i++){
-            if(move_list[i] & KNIGHT_MOVE)
-                printf("[%c%d %c%d]",(move_list[i] & 63) % 8 + 'A',((move_list[i] & 63)/ 8)+1,((move_list[i]>>6) & 63) % 8 + 'A',(( move_list[i]>>6) & 63) / 8 +1);
-        }*/
         printf("\nPAWN DOUBLE MOVES ");
         for(int i=0;i < move_count;i++){
             if(move_list[i] & PAWN_DOUBLE_MOVE)
@@ -69,16 +59,19 @@ void ask_move(char **board,Gamestate* gamestate){
             if(move_list[i] & EN_PASSANT_MOVE)
                 printf("[%c%d %c%d]",(move_list[i] & 63) % 8 + 'A',((move_list[i] & 63)/ 8)+1,((move_list[i]>>6) & 63) % 8 + 'A',(( move_list[i]>>6) & 63) / 8 +1);
         }
-        /*printf("\nHASH\n");
-        for(int i=0;i < move_count;i++){
-            printf("[%d]",move_list[i]);
-        }*/
-       
     #endif
-
+    // If blacks move, make random move
+    if(gamestate->turn == BLACK){
+        int rand_move_index = make_random_move(move_count);
+        make_move(board,move_list[rand_move_index],gamestate);
+        row = decode(move_list[rand_move_index],ROW);
+        col = decode(move_list[rand_move_index],COL);
+        end_row = decode((move_list[rand_move_index]>>6),ROW);
+        end_col = decode((move_list[rand_move_index]>>6),COL);
+        printf("\n\n---------------------------------\nOPPONENTS MOVE %c%d to %c%d",col + 'A',row + 1,end_col + 'A',end_row + 1);
+    }else{
     // Ask for a move until a legal move is entered 
-    if(gamestate->turn == WHITE){
-        A:
+        while(!hash){
         printf("\n\nEnter move in format(a2 a4): "); 
             correct_symbols = scanf(" %[a-h] %[1-8]",&start_pos[0],&start_pos[1]);
             correct_symbols += scanf(" %[a-h] %[1-8]",&end_pos[0],&end_pos[1]);
@@ -100,34 +93,21 @@ void ask_move(char **board,Gamestate* gamestate){
             row = atoi(&(start_pos[1]))-1;
             end_col = (int)(end_pos[0]-CHAR_TO_INT);
             end_row = atoi(&(end_pos[1]))-1;
+
             // Test if the user entered move matches a move on the move list (returns 0 if invalid)
             hash = test_move(board,row,col,end_row,end_col,&move_count,move_list);
             if(hash){
                 make_move(board,hash,gamestate);
             }else{
-                printf("ILLEGAL MOVE!!!\n");
-                goto A;
+                printf("ILLEGAL MOVE!!!");
             }
-    }else{
-        // If blacks move, make random move
-        int rand_move_index = make_random_move(move_count);
-        make_move(board,move_list[rand_move_index],gamestate);
-        int e_row1 = decode(move_list[rand_move_index],ROW);
-        int e_col1 = decode(move_list[rand_move_index],COL);
-        int e_row2 = decode((move_list[rand_move_index]>>6),ROW);
-        int e_col2 = decode((move_list[rand_move_index]>>6),COL);
-        printf("\n\n---------------------------------\nOPPONENTS MOVE %c%d to %c%d",e_col1 + 'A',e_row1 + 1,e_col2 + 'A',e_row2 + 1);
+        }
     }
     // Add the move to the move history
     gamestate->move_history[gamestate->move_number++] = hash;
-    /*printf("Previous moves: ");
-    for(int i = 0; i < gamestate->move_number;i++){
-        printf("[%d]",gamestate->move_history[i]);
-    }*/
 }
 int make_random_move(int move_count){
     time_t t;
-
     srand((unsigned) time(&t));
     int index = rand() % move_count;
 
@@ -144,8 +124,8 @@ int decode(int hash, int choice){
     else
         return (hash & 0x3F) % 8;
 }
+// Hash the input and check if it matches with a move in the move list
 int test_move(char **board,int row,int col,int end_row,int end_col,int* move_count,int* move_list){
-    // Hash the input and check if it matches with a move in the move list
     // Bits 0-5 are for the starting square and 6-12 for the landing square
     int hash = encode(row,col) | (encode(end_row,end_col)<<6);
     for(int i = 0;i < *move_count;i++){
@@ -160,6 +140,7 @@ void swap(int* a,int* b){
     *a = *b;
     *b = temp;
 }
+// Make the move on the board and update game variables
 void make_move(char** board,int hash,Gamestate* gamestate){
     int row = decode(hash,ROW);
     int col = decode(hash,COL);
@@ -191,12 +172,13 @@ void make_move(char** board,int hash,Gamestate* gamestate){
         // Get the hash of the piece that got En passanted
         int dir = (turn == WHITE) ? -1 : 1;
         int en_passant_hash = encode(end_row-dir,end_col);
+
+        // Find the index of the piece that got captured,swap it with the last index and decrement piece count
         swap(&gamestate->pieces[!turn][get_piece_index(en_passant_hash,gamestate,ENEMY_PIECE)],&gamestate->pieces[!turn][gamestate->piece_count[!turn] - 1]);
         gamestate->piece_count[!turn]--;
-        //printf("Deleting piece from hash %d\n",en_passant_hash & 0x3F);
         board[end_row + dir][end_col] = EMPTY_SQUARE;
     }else if(hash & PAWN_MOVE && (end_row == 7 || end_row == 0)){
-        // Pawn promotion
+        // Handle pawn promotion
         board[end_row][end_col] = (turn == WHITE) ? 'Q' : 'q';
     }
 
@@ -350,7 +332,7 @@ int test_king_threat(int row,int col,int king_row,int king_col,char** board){
         return 1;
     return 0;
 }
-
+// Check if king is threatened by a move 0 = no threat, 1 = threat
 int is_king_threatened(int row,int col,int new_row,int new_col,char** board,int move_info,Gamestate* gamestate){
     // If a move is valid according to the pieces ruleset, we still have to ensure it doesn't endanger our king
     // We make the move under test on the board, run through enemy pieces and see if our king is in danger
@@ -390,7 +372,6 @@ int is_king_threatened(int row,int col,int new_row,int new_col,char** board,int 
         }else{
             char piece = board[enemy_row][enemy_col];
 
-               // printf("Testing at %d %d piece %c\n",enemy_row,enemy_col,piece);
             if(piece == 'R' || piece == 'r')
                 threat = test_rook_threat(enemy_row,enemy_col,king_row,king_col,board);
             else if(piece == 'B' || piece == 'b')
@@ -403,13 +384,11 @@ int is_king_threatened(int row,int col,int new_row,int new_col,char** board,int 
                 threat = test_knight_threat(enemy_row,enemy_col,king_row,king_col,board);
             else 
                 threat = test_king_threat(enemy_row,enemy_col,king_row,king_col,board);
-            
         }
         if(threat){
             goto EXIT_LOOP;
         }
     }
-
     EXIT_LOOP:
     // Place the board to its original position
     board[row][col] = board[new_row][new_col];
@@ -420,7 +399,8 @@ int is_king_threatened(int row,int col,int new_row,int new_col,char** board,int 
     
     return threat;
 }
-
+// Computes all the moves for a said piece, this function is only called once every turn so the time lost by looping is not
+// that expensive
 void compute_moves(char** board,int* moves,int* move_count,Gamestate* gamestate){
     for(int i = 0;i < 8;i++){
         for(int j = 0;j < 8;j++){
@@ -492,6 +472,7 @@ void compute_capture_moves(int row,int col,char** board,int* moves,int* move_cou
     }
 }
 void compute_en_passant_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate){
+    // If the last move was not a double pawn move, early exit
     if(!(gamestate->move_history[gamestate->move_number-1] & PAWN_DOUBLE_MOVE)){
         return;
     }
@@ -506,6 +487,7 @@ void compute_en_passant_moves(int row,int col,char** board,int* moves,int* move_
     }
 }
 void compute_knight_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate){
+    // We can get every direction with two loops that go from negative to positive
     for(int dir1 = -1; dir1 <= 1;dir1 +=2){
         for(int dir2 = -1; dir2 <= 1;dir2 +=2){
             int new_row = row + 2 * dir1;
@@ -529,6 +511,11 @@ void compute_knight_moves(int row,int col,char** board,int* moves,int* move_coun
         }
     }
 }
+// Computing horizontal, vertical and diagonal moves all follow the same pattern:
+// 1. Loop the desired direction until we either hit our own piece or a enemy piece
+// 2. Check that its not occupied by our own piece
+// 3. Test if making the move opens our king
+// Move_info variable is used to carry out if we move a rook so that we can handle castling related variables later on.
 void compute_horizontal_moves(int row,int col,char** board,int* moves,int* move_count,int info,Gamestate* gamestate){
     for(int dir = -1; dir <= 1;dir += 2){
         int new_col = col + dir;
@@ -544,9 +531,11 @@ void compute_horizontal_moves(int row,int col,char** board,int* moves,int* move_
     }
 }
 void compute_vertical_moves(int row,int col,char** board,int* moves,int* move_count, int info,Gamestate* gamestate){
+    // Loop possible moves downwards and upwards
     for(int dir = -1; dir <= 1;dir += 2){
         int current_square = EMPTY_SQUARE;
         int new_row = row + dir;
+        // While move is in bounds and current square is empty continue looping
         while(new_row < 8 && new_row >= 0 && current_square == EMPTY_SQUARE && !is_king_threatened(row,col,new_row,col,board,0,gamestate)){
             current_square = get_square_status(board,new_row,col,gamestate);
             int move_info = (current_square == ENEMY_PIECE) ? CAPTURE_MOVE | info : NORMAL_MOVE | info;
@@ -594,15 +583,18 @@ void compute_king_moves(int row,int col,char** board,int* moves,int* move_count,
             int current_square = EMPTY_SQUARE;
             int new_row = row + dir1;
             int new_col = col + dir2;
+            // If the move is in bounds and not the kings current square
             if(new_row < 8 && new_row >= 0 && new_col < 8 && new_col >= 0  && !(new_row == row && new_col == col)){
                 current_square = get_square_status(board,new_row,new_col,gamestate);
                 int move_info = (current_square == ENEMY_PIECE) ? CAPTURE_MOVE | KING_MOVE: KING_MOVE;
+                // If the piece is not occupied by our own piece and moving to the square doesn't threaten king add the move
                 if(current_square != FRIENDLY_PIECE && !is_king_threatened(row,col,new_row,new_col,board,KING_MOVE,gamestate)){
                 add_move(row,col,new_row,new_col,moves,move_count,move_info);
                 }
             }
         }
     }
+    // If our king has not been moved we compute castling moves
     if(gamestate->king_moves & (1U<<gamestate->turn))
         compute_castling(row,col,board,moves,move_count,gamestate);
 }
@@ -611,13 +603,15 @@ void compute_castling(int row,int col,char** board,int* moves,int* move_count,Ga
     int castling_rights = 1;
     int move_info = KING_MOVE | CASTLING_MOVE;
     int turn = gamestate->turn;
-    if(gamestate->rook_moves & 1U<<turn){
+    
+    // Test if our left rook has been moved and that all squares between are empty
+    if(gamestate->rook_moves & (1U<<turn)){
         for(int new_col = col - 1; new_col >= 1;new_col--){
             current_square = get_square_status(board,row,new_col,gamestate);
-
             if(current_square != EMPTY_SQUARE || is_king_threatened(row,col,row,new_col,board,KING_MOVE,gamestate))
                 castling_rights = 0;
         }
+        // If all squares meet the rules we add the mvoe
         if(castling_rights)
             add_move(row,col,row,col - 2,moves,move_count,move_info);
     }

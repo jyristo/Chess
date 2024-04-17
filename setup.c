@@ -22,9 +22,22 @@ printf("\n  -----------------------------------\n      A   B   C   D   E   F   G
 }
 
 void init_board(char** board, Gamestate* gamestate){
-    //Reinitialize game variables 
+    //Initialize game variables 
+    gamestate->kingpos[WHITE] = 4;
+    gamestate->kingpos[BLACK] = 60;
+    gamestate->piece_count[WHITE] = 16;
+    gamestate->piece_count[BLACK] = 16;
+    gamestate->king_moves = 3;
+    gamestate->rook_moves = 15;
+    gamestate->game_over = 0;
+    gamestate->turn = 1;
 
-    
+    // Initialize piece positions
+    for(int i = 0; i < 16; i++){
+        gamestate->pieces[WHITE][i] = i;
+        gamestate->pieces[BLACK][i] = 48 + i;
+    }
+
     char init_vals[8][8] = {  
         {'R','N','B','Q','K','B','N','R'},
         {'P','P','P','P','P','P','P','P'},
@@ -40,6 +53,14 @@ void init_board(char** board, Gamestate* gamestate){
            board[i][j]=init_vals[i][j];
         }
     }
+        printf("#######################################################################\n"
+            "# Enter a move by writing the starting square and the end square\n"
+            "# For example: h2 h4\n"
+            "# After that the bot will make a random move\n"
+            "#\n"
+            "# The program will show you some possible key moves\n"
+            "#######################################################################\n");
+
 }
 void display_winner(char** board,Gamestate* gamestate){
     int row = decode(gamestate->kingpos[gamestate->turn],ROW);
@@ -50,6 +71,6 @@ void display_winner(char** board,Gamestate* gamestate){
         else
             printf("\n!!!!!!!!!!!WHITE WINS!!!!!!!!!!\n");
     }else{
-        printf("\nITS A STALEMATE YOU ALL SUCK ASS FUCK YOU EAT SHIT\n");
+        printf("\nITS A STALEMATE YOU ALL SUCK, FUCK YOU EAT SHIT\n");
     }
 }

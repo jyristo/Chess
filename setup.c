@@ -5,28 +5,32 @@
 
 void display(char **board){
     printf("\n");
+    char square = 254;
+    int row = 8;
     for(int i=7;i>=0;i--){
-        printf("\n");
+        printf("\n %d|",row--);
         for(int j=0;j<=7;j++){
-           printf("%3c",board[i][j]);
+            // This is disgusting but i don't care i made it while i was furious (prints white squares to the board)
+            if(((board[i][j] == EMPTY_SQUARE) && (((((i+1) % 2) != 1) && ((j+1) % 2 ) != 0)
+            || (((i+1) % 2) == 1 && ((j+1) % 2 ) == 0)))){
+                printf("%4c",square);
+            }else
+                printf("%4c",board[i][j]);
         }
     }
+printf("\n  -----------------------------------\n      A   B   C   D   E   F   G   H\n");
 }
 
-void init_board(char** board){
+void init_board(char** board, Gamestate* gamestate){
     //Reinitialize game variables 
-    game_over = 0;
-    turn = 1;
-    king_moves = 3;
-    move_number = 1;
-    rook_moves = 15;
+
     
     char init_vals[8][8] = {  
         {'R','N','B','Q','K','B','N','R'},
         {'P','P','P','P','P','P','P','P'},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
-        {' ',' ',' ',' ',' ',' ','P',' '},
+        {' ',' ',' ',' ',' ',' ',' ',' '},
         {' ',' ',' ',' ',' ',' ',' ',' '},
         {'p','p','p','p','p','p','p','p'},
         {'r','n','b','q','k','b','n','r'}
@@ -37,12 +41,11 @@ void init_board(char** board){
         }
     }
 }
-void display_winner(char** board){
-    Piece* king_ptr = (turn == WHITE) ? &white_king : &black_king;
-    int row = king_ptr->row;
-    int col = king_ptr->col;
-    if(is_king_threatened(row,col,row,col,board,1)){
-        if(turn == WHITE)
+void display_winner(char** board,Gamestate* gamestate){
+    int row = decode(gamestate->kingpos[gamestate->turn],ROW);
+    int col = decode(gamestate->kingpos[gamestate->turn],COL);
+    if(is_king_threatened(row,col,row,col,board,KING_MOVE,gamestate)){
+        if(gamestate->turn == WHITE)
             printf("\n!!!!!!!!!!!BLACK WINS!!!!!!!!!!\n");
         else
             printf("\n!!!!!!!!!!!WHITE WINS!!!!!!!!!!\n");

@@ -9,6 +9,8 @@
 #define WHITE 0
 #define BLACK 1
 #define ERROR -1
+#define ROW 55
+#define COL 66
 
 #define NORMAL_MOVE         (1U<<12)
 #define KING_MOVE           (1U<<13)
@@ -17,23 +19,20 @@
 #define PAWN_DOUBLE_MOVE    (1U<<16)
 #define ROOK_MOVE           (1U<<17)
 #define CAPTURE_MOVE        (1U<<18)
+#define PAWN_MOVE           (1U<<19)
+#define KNIGHT_MOVE         (1U<<20)
 
-
-
-typedef struct{
-    int start_col;
-    int start_row;
-    int end_col;
-    int end_row;
-    char piece; 
-}Move;
-
-
-typedef struct{
-    int row;
-    int col;
-    char type;
-}Piece;
+typedef struct gamestate{
+    int kingpos[2];
+    int turn;
+    int pieces[2][16];
+    int piece_count[2];
+    int move_number;
+    int move_history[100];
+    int rook_moves;
+    int king_moves;
+    int game_over;
+}Gamestate;
 
 enum pieces{
     PAWN = 'p',
@@ -44,46 +43,48 @@ enum pieces{
     KING ='k'
 };
 
-
-extern Move last_move;
-extern Piece white_king;
-extern Piece black_king;
-extern Piece temp_king;
-extern Piece checking_piece;
-extern int game_over;
-extern int king_moves;
-extern int turn;
-extern int move_number;
-extern int rook_moves;
-extern int check_mate;
-
-void init_board(char **board);
+void init_board(char **board,Gamestate* gamestate);
 void display(char **board);
-void display_winner(char** board);
-void ask_move(char **board,int* move_history,int* previous_move,int* move_number);
+void display_winner(char** board,Gamestate* gamestate);
+void ask_move(char **board,Gamestate* gamestate);
+int get_square_status(char** board,int row, int col,Gamestate* gamestate);
+int make_random_move(int move_count);
+void compute_moves(char** board,int* moves,int* move_count,Gamestate* gamestate);
+int get_piece_index(int hash,Gamestate* gamestate,int piece_color);
+void swap(int* a,int* b);
+
+void compute_pawn_moves(int row,int col,char** board,int* moves, int* move_count,Gamestate* gamestate);
+void compute_forward_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_capture_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_en_passant_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+
+void compute_knight_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_rook_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_bishop_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_queen_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_king_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+
+void compute_diagonal_moves(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+void compute_horizontal_moves(int row,int col,char** board,int* moves,int* move_count,int info,Gamestate* gamestate);
+void compute_vertical_moves(int row,int col,char** board,int* moves,int* move_count,int info,Gamestate* gamestate);
+
+void compute_castling(int row,int col,char** board,int* moves,int* move_count,Gamestate* gamestate);
+int test_rook_threat(int row,int col,int new_row,int new_col,char** board);
+int test_bishop_threat(int row,int col,int new_row,int new_col,char** board);
+int test_pawn_threat(int row,int col,int new_row,int new_col,char** board,Gamestate* gamestate);
+int test_king_threat(int row,int col,int new_row,int new_col,char** board);
+int test_queen_threat(int row,int col,int new_row,int new_col,char** board);
+int test_knight_threat(int row,int col,int new_row,int new_col,char** board);
 
 
-int get_square_status(char** board,int row, int col);
-void compute_moves(char** board,int* moves,int* move_count,int* previous_move);
-void compute_pawn_moves(int row,int col,char **board,int* moves, int* move_count,int* previous_move);
-void compute_forward_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_capture_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_en_passant_moves(int row,int col,char** board,int* moves,int* move_count,int* previous_move);
-void compute_knight_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_rook_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_bishop_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_queen_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_king_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_diagonal_moves(int row,int col,char** board,int* moves,int* move_count);
-void compute_horizontal_moves(int row,int col,char** board,int* moves,int* move_count,int info);
-void compute_vertical_moves(int row,int col,char** board,int* moves,int* move_count,int ino);
-void compute_castling(int row,int col,char** board,int* moves,int* move_count);
-int is_king_threatened(int row,int col,int new_row,int new_col,char** board,int testing_for_king);
-
-void add_move(int row,int col,int end_row,int end_col,int* moves,int* move_count,int move_infos);
-void make_move(char** board,int hash);
-void make_castling_move(char** board,int row,int col,int end_row,int end_col);
+int is_king_threatened(int row,int col,int new_row,int new_col,char** board,int move_info,Gamestate* gamestate);
+void add_move(int row,int col,int end_row,int end_col,int* moves,int* move_count,int move_info);
+void make_move(char** board,int hash,Gamestate* gamestate);
+void make_castling_move(char** board,int row,int col,int end_row,int end_col,Gamestate* gamestate);
 int test_move(char **board,int row,int col,int end_row,int end_col,int* move_count,int* move_list);
+
+int encode(int row,int col);
+int decode(int hash,int choice);
 
 int vertical_ray(int row,int col,int new_row,int new_col,char** board);
 int horizontal_ray(int row,int col,int new_row,int new_col,char** board);

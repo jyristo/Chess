@@ -3,6 +3,8 @@ The .exe is available in the file but if your windows defender gets angry just c
 
 Code architecture:
 
-  main.c Handles the high level operations.
-  setup.c contains board representation and variable initialization.
-  gameLogic.c contains the core logic of move generation and validation.
+  main.c Handles the high level operations
+  
+  setup.c contains board representation and variable initialization
+  
+  gameLogic.c contains the core logic of move generation and validation
